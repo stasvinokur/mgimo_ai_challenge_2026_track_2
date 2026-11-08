@@ -1,0 +1,1 @@
+# mgimo_ai_challenge_2026_track_2
