@@ -1,0 +1,21 @@
+# Server: ports 80/443 belong to the shared entry proxy in /opt/edge (D-53), not to this project.
+# A public stand must not run with the published demo passwords or the quick-login buttons (D-52).
+services:
+  migrate:
+    environment:
+      DEMO_ACCOUNT_PASSWORDS: ${DEMO_ACCOUNT_PASSWORDS:?задайте пароли демо-аккаунтов стенда в серверном .env (D-52)}
+
+  app:
+    ports: !override []
+    environment:
+      DEMO_LOGIN_HINTS: ${DEMO_LOGIN_HINTS:?задайте DEMO_LOGIN_HINTS в серверном .env (D-52)}
+    networks:
+      edge:
+        aliases: [pulse-app]
+
+  db:
+    ports: !override []
+
+networks:
+  edge:
+    external: true

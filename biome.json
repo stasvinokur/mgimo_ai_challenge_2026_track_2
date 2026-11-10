@@ -1,0 +1,160 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.6.4/schema.json",
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true
+  },
+  "files": {
+    "ignoreUnknown": true,
+    "includes": [
+      "src/**",
+      "tests/**",
+      "scripts/**",
+      "package.json",
+      "tsconfig.json",
+      "biome.json",
+      "*.config.{ts,mjs,cjs}"
+    ]
+  },
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space",
+    "indentWidth": 2
+  },
+  "css": {
+    "parser": {
+      "tailwindDirectives": true
+    }
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "preset": "recommended"
+    },
+    "domains": {
+      "next": "recommended",
+      "react": "recommended"
+    }
+  },
+  "assist": {
+    "actions": {
+      "source": {
+        "organizeImports": "on"
+      }
+    }
+  },
+  "overrides": [
+    {
+      "includes": ["src/domain/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": [
+                      "next",
+                      "next/**",
+                      "react",
+                      "react/**",
+                      "zod",
+                      "zod/**",
+                      "drizzle-orm",
+                      "drizzle-orm/**",
+                      "node:*",
+                      "@/application/**",
+                      "@/infrastructure/**",
+                      "@/composition/**",
+                      "@/app/**",
+                      "@/ui/**"
+                    ],
+                    "message": "Домен зависит только от домена."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["src/application/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": [
+                      "next",
+                      "next/**",
+                      "react",
+                      "react/**",
+                      "drizzle-orm",
+                      "drizzle-orm/**",
+                      "node:*",
+                      "@/infrastructure/**",
+                      "@/composition/**",
+                      "@/app/**",
+                      "@/ui/**"
+                    ],
+                    "message": "Прикладной слой зависит только от домена и своих портов."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["src/app/**", "src/ui/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["@/infrastructure/**", "@/domain/**"],
+                    "message": "Интерфейс обращается к прикладному слою через composition."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["src/ui/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": [
+                      "@/infrastructure/**",
+                      "@/domain/**",
+                      "@/composition/**"
+                    ],
+                    "message": "UI получает данные через props; серверные зависимости собираются в src/app."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,53 @@
+.today-meta-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 calc(var(--spacing) * 2);
+  color: var(--muted-foreground);
+  font-size: var(--text-xs);
+  font-weight: 500;
+}
+
+.today-meta-line h1 {
+  font: inherit;
+  letter-spacing: inherit;
+}
+
+.today-action-copy {
+  flex: 1 1 calc(var(--spacing) * 40);
+  min-width: 0;
+}
+
+.today-action-link {
+  flex: 1 0 auto;
+}
+
+.today-action-row :is(a, button) {
+  max-inline-size: 100%;
+  overflow-wrap: normal;
+  word-break: normal;
+  white-space: normal;
+  hyphens: manual;
+}
+
+.today-week-day {
+  overflow-wrap: normal;
+  word-break: normal;
+  hyphens: auto;
+}
+
+.today-briefing-controls button {
+  min-block-size: calc(var(--spacing) * 12);
+  max-inline-size: 100%;
+  overflow-wrap: normal;
+  word-break: normal;
+  white-space: nowrap;
+  hyphens: manual;
+}
+
+.today-page:lang(en),
+.today-week-day:lang(en) {
+  overflow-wrap: normal;
+  word-break: normal;
+  hyphens: manual;
+}

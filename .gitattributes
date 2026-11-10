@@ -1,0 +1,5 @@
+# Append-only journals written by several parallel lanes: keep lines from both sides on merge.
+docs/CODEX-LOG.md merge=union
+docs/ai-log/errors.md merge=union
+
+*.sh text eol=lf

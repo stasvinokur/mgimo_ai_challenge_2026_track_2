@@ -1,0 +1,2 @@
+# Runtime entry point; regenerate requirements.txt with the commands in README.md.
+torch==2.15.0+cpu

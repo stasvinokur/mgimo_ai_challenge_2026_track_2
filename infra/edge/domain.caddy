@@ -1,0 +1,52 @@
+# A domain shared by several solutions, each in its own folder (D-53, D-54). Installed once by the first project as
+# /opt/edge/sites/__APP_DOMAIN__.caddy and owned by the server afterwards. Projects add route files to
+# /opt/edge/routes/__APP_DOMAIN__/ (see infra/edge/routes/pulse.caddy); the root shows the landing page from
+# /opt/edge/www/__APP_DOMAIN__/.
+
+# Every neighbour route on this domain imports this snippet: the browser sends «Пульс»'s session cookie (Path=/) to the
+# whole origin, and a neighbour's backend has no business receiving it (D-54).
+(drop_pulse_session) {
+	request_header Cookie "(^|;\s*)__Host-pulse-session=[^;]*;?\s*" "$1"
+}
+
+__APP_DOMAIN__ {
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		-Server
+	}
+
+	log {
+		output file /data/__APP_DOMAIN__-access.log {
+			roll_size 10MiB
+			roll_keep 7
+			roll_keep_for 168h
+		}
+		format filter {
+			wrap json
+			fields {
+				request>headers delete
+				request>uri delete
+				request>remote_ip delete
+				request>remote_port delete
+				request>client_ip delete
+				resp_headers delete
+			}
+		}
+	}
+
+	import /etc/caddy/routes/__APP_DOMAIN__/*.caddy
+
+	# The static landing page needs no cookies at all.
+	handle {
+		request_header -Cookie
+		header {
+			X-Content-Type-Options nosniff
+			Content-Security-Policy "default-src 'none'; style-src 'unsafe-inline'; img-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'"
+			Referrer-Policy strict-origin-when-cross-origin
+		}
+		# Until 10.11 «Пульс» lived at the root with a root-scope service worker; sw.js removes it and its caches.
+		header /sw.js Cache-Control "no-store"
+		root * /srv/__APP_DOMAIN__
+		file_server
+	}
+}

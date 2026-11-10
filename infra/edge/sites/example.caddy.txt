@@ -1,0 +1,32 @@
+# Образец для другого проекта на этом VPS. Не подключается: Caddyfile читает только sites/*.caddy.
+#
+# 1. Подключите сервис проекта к внешней сети edge с уникальным алиасом, например:
+#      networks:
+#        edge:
+#          aliases: [project-app]
+#      networks:
+#        edge:
+#          external: true
+#    Порт сервиса наружу не публикуйте: снаружи его видит только общий Caddy.
+# 2. Скопируйте нужный блок в /opt/edge/sites/<проект>.caddy.
+# 3. Проверьте и перечитайте конфигурацию:
+#      cd /opt/edge && docker compose exec -T caddy caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
+#      cd /opt/edge && docker compose exec -T caddy caddy reload --config /etc/caddy/Caddyfile --adapter caddyfile
+
+# Вариант 1: свой поддомен (A-запись поддомена — на этот VPS).
+project.example.ru {
+	reverse_proxy project-app:8080
+}
+
+# Вариант 2: путь на общем домене. Один домен описывается только в одном файле,
+# поэтому все проекты-пути этого домена живут в одном файле, например sites/example.ru.caddy.
+# handle_path снимает префикс: приложение должно уметь работать под /project/ (base path).
+example.ru {
+	redir /project /project/ 308
+	handle_path /project/* {
+		reverse_proxy project-app:8080
+	}
+	handle_path /other/* {
+		reverse_proxy other-app:3000
+	}
+}

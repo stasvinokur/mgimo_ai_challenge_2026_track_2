@@ -1,0 +1,38 @@
+# Shared entry proxy for every project on the VPS (D-53). Lives in /opt/edge and belongs to no project:
+# projects join the external network `edge` under a unique alias and drop a site file into sites/ (own domain)
+# or a route file into routes/<domain>/ (folder of a shared domain, D-54); www/<domain>/ is the shared root page.
+name: edge
+
+services:
+  caddy:
+    image: caddy:2.11.7-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./sites:/etc/caddy/sites:ro
+      - ./routes:/etc/caddy/routes:ro
+      - ./www:/srv:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    networks: [edge]
+    read_only: true
+    tmpfs: [/tmp]
+    security_opt: [no-new-privileges:true]
+    healthcheck:
+      test: ["CMD", "wget", "-qO", "/dev/null", "http://127.0.0.1:2019/config/"]
+      interval: 10s
+      timeout: 3s
+      start_period: 10s
+      retries: 6
+
+networks:
+  edge:
+    external: true
+
+volumes:
+  caddy-data:
+  caddy-config:

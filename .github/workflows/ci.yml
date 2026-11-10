@@ -1,0 +1,279 @@
+name: CI
+
+# Submission repository: checks run only on demand (Actions → CI → Run workflow).
+# The server is deployed by hand: DEPLOY_BUILD=1 infra/deploy.sh <SHA> (README, «Сервер»).
+on:
+  workflow_dispatch:
+
+permissions: {}
+
+env:
+  NEXT_TELEMETRY_DISABLED: "1"
+  IMAGE_REPO: ghcr.io/stasvinokur/mgimo-pulse
+
+jobs:
+  check:
+    name: Проверки приложения
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_DB: pulse
+          POSTGRES_USER: pulse
+          POSTGRES_PASSWORD: pulse_ci
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready --username=pulse --dbname=pulse"
+          --health-interval 5s --health-timeout 3s --health-retries 12
+    env:
+      DATABASE_URL: postgresql://pulse:pulse_ci@127.0.0.1:5432/pulse
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "26"
+          package-manager-cache: false
+      - uses: pnpm/action-setup@v6
+      - run: pnpm install --frozen-lockfile
+      - run: python3 -m unittest discover -s infra/tts -v
+      - run: pnpm check
+
+  secrets:
+    name: Поиск секретов
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Установить gitleaks с проверкой SHA-256
+        id: gitleaks
+        env:
+          GITLEAKS_VERSION: "8.30.1"
+          GITLEAKS_SHA256: 551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb
+        run: |
+          archive="gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          curl --fail --silent --show-error --location --retry 3 \
+            "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/${archive}" \
+            --output "$RUNNER_TEMP/$archive"
+          printf '%s  %s\n' "$GITLEAKS_SHA256" "$RUNNER_TEMP/$archive" | sha256sum --check --strict
+          mkdir -p "$RUNNER_TEMP/gitleaks"
+          tar -xzf "$RUNNER_TEMP/$archive" -C "$RUNNER_TEMP/gitleaks" gitleaks
+      - name: Проверить историю
+        # Whole history of the checked-out branch.
+        run: '"$RUNNER_TEMP/gitleaks/gitleaks" git --redact --no-banner --log-opts="HEAD" .'
+      - name: Проверить дерево
+        if: ${{ !cancelled() && steps.gitleaks.outcome == 'success' }}
+        run: '"$RUNNER_TEMP/gitleaks/gitleaks" dir --redact --no-banner .'
+
+  image:
+    name: Образы app и migrator
+    needs: [check, secrets]
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: docker/setup-buildx-action@v4
+      - uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Собрать и опубликовать app
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          target: runtime
+          platforms: linux/amd64
+          push: true
+          tags: ${{ env.IMAGE_REPO }}/app:${{ github.sha }}
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+          cache-from: type=gha,scope=pulse-app
+          cache-to: type=gha,mode=max,scope=pulse-app
+      - name: Собрать и опубликовать migrator
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          target: migrator
+          platforms: linux/amd64
+          push: true
+          tags: ${{ env.IMAGE_REPO }}/migrator:${{ github.sha }}
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+          cache-from: type=gha,scope=pulse-migrator
+          cache-to: type=gha,mode=max,scope=pulse-migrator
+
+  tts-image:
+    name: Образ локального голоса
+    needs: [check, secrets]
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: docker/setup-buildx-action@v4
+      - uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Собрать tts с кэшем
+        uses: docker/build-push-action@v7
+        with:
+          context: infra/tts
+          platforms: linux/amd64
+          load: true
+          tags: ${{ env.IMAGE_REPO }}/tts:${{ github.sha }}
+          cache-from: type=gha,scope=pulse-tts
+          cache-to: type=gha,mode=max,scope=pulse-tts
+      - name: Проверить закрытый контейнер и настоящий WAV
+        run: |
+          docker network create --internal pulse-tts-test
+          docker run -d --name pulse-tts-test --network pulse-tts-test --read-only --user 1001:1001 --cap-drop ALL --security-opt no-new-privileges --cpus 2 --memory 1536m --pids-limit 64 --tmpfs /tmp:rw,noexec,nosuid,size=64m "${IMAGE_REPO}/tts:${GITHUB_SHA}"
+          for attempt in $(seq 1 30); do
+            if [ "$(docker inspect --format '{{.State.Health.Status}}' pulse-tts-test)" = healthy ]; then break; fi
+            sleep 2
+          done
+          test "$(docker inspect --format '{{.State.Health.Status}}' pulse-tts-test)" = healthy
+          docker exec pulse-tts-test python smoke.py
+          docker stats --no-stream pulse-tts-test
+      - name: Опубликовать проверенный образ
+        run: docker push "${IMAGE_REPO}/tts:${GITHUB_SHA}"
+      - name: Удалить проверочный контейнер
+        if: always()
+        run: |
+          docker logs pulse-tts-test || true
+          docker rm -f pulse-tts-test || true
+          docker network rm pulse-tts-test || true
+
+  e2e:
+    name: Playwright против образа (${{ matrix.shard }}/4)
+    needs: [image, tts-image]
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        # 836 tests took up to 25.6 of 30 minutes on three shards (05.11): keep headroom.
+        shard: [1, 2, 3, 4]
+    permissions:
+      contents: read
+      packages: read
+    env:
+      IMAGE_TAG: ${{ github.sha }}
+      # compose.dev.yaml publishes db on 127.0.0.1:5432 so host-side security tests can reach it
+      COMPOSE_FILE: compose.yaml:compose.dev.yaml
+      COMPOSE_PROJECT_NAME: pulse-e2e
+      TTS_URL: http://tts:8000
+      COMPOSE_PROFILES: tts
+      E2E_TTS: "1"
+      APP_ORIGIN: http://localhost:3000
+      PLAYWRIGHT_BASE_URL: http://localhost:3000
+      # Deterministic assistant runtime for e2e: no LLM network or key in CI (D-26).
+      ASSISTANT_RUNTIME: mock
+      PLAYWRIGHT_HTML_REPORT: ${{ github.workspace }}/playwright-report
+      PLAYWRIGHT_HTML_OPEN: never
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "26"
+          package-manager-cache: false
+      - uses: pnpm/action-setup@v6
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps chromium
+      - uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Сгенерировать тестовое окружение
+        run: |
+          password="$(openssl rand -hex 24)"
+          printf '::add-mask::%s\n' "$password"
+          {
+            printf 'TTS_URL=http://tts:8000\n'
+            printf 'POSTGRES_PASSWORD=%s\n' "$password"
+            # inside the Compose network (app, migrate) the host is "db"
+            printf 'DATABASE_URL=postgresql://pulse:%s@db:5432/pulse\n' "$password"
+            # Playwright runs on the runner host and reaches db through the published dev port
+            printf 'HOST_DATABASE_URL=postgresql://pulse:%s@127.0.0.1:5432/pulse\n' "$password"
+          } >> "$GITHUB_ENV"
+      - name: Скачать образы и дождаться стека
+        run: |
+          docker compose pull
+          docker compose up -d --no-build --wait --wait-timeout 240
+      - name: Получить манифест Server Actions из проверяемого образа
+        run: |
+          mkdir -p .next/server
+          if ! docker compose cp app:/app/.next/server/server-reference-manifest.json .next/server/server-reference-manifest.json; then
+            echo '::error::Не удалось получить манифест Server Actions из контейнера app.'
+            exit 1
+          fi
+          node --input-type=module <<'NODE'
+          import { readFileSync } from "node:fs";
+          try {
+            JSON.parse(readFileSync(".next/server/server-reference-manifest.json", "utf8"));
+          } catch {
+            console.error("::error::Манифест Server Actions не скопирован или содержит некорректный JSON.");
+            process.exit(1);
+          }
+          NODE
+      - name: Выполнить e2e и security
+        run: |
+          cat > "$RUNNER_TEMP/playwright-ci.config.ts" <<EOF
+          import config from "${GITHUB_WORKSPACE}/playwright.config.ts";
+          export default {
+            ...config,
+            testDir: "${GITHUB_WORKSPACE}",
+            outputDir: "${GITHUB_WORKSPACE}/test-results",
+            testMatch: [
+              ...(Array.isArray(config.testMatch) ? config.testMatch : [config.testMatch].filter(Boolean)),
+              "tests/security/**/*.spec.ts",
+            ],
+          };
+          EOF
+          DATABASE_URL="$HOST_DATABASE_URL" pnpm test:e2e --config "$RUNNER_TEMP/playwright-ci.config.ts" --reporter=line,html --shard=${{ matrix.shard }}/4
+      - name: Показать состояние и логи стека при ошибке
+        if: failure()
+        # logs contain no secrets: the app logs only fixed event codes (AGENTS.md)
+        run: |
+          docker compose ps --all
+          docker compose logs --no-color --tail 200 app migrate db tts
+      - name: Сохранить отчёт при ошибке
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-report-${{ matrix.shard }}
+          path: |
+            playwright-report/
+            test-results/
+          if-no-files-found: ignore
+          retention-days: 7
+      - name: Остановить тестовый стек
+        if: always()
+        run: docker compose down --volumes --remove-orphans
+

@@ -1,0 +1,116 @@
+import type { Dictionary } from "@/ui/i18n/translate";
+
+export const shellMessages = {
+  competitionConcept: {
+    ru: "Конкурсный концепт MGIMO×AI Challenge. Не официальный сервис МГИМО. Все данные вымышлены",
+    en: "MGIMO×AI Challenge competition concept. Not an official MGIMO service. All data is fictional",
+  },
+  brandName: { ru: "Пульс", en: "Pulse" },
+  brandCaption: { ru: "цифровой деканат", en: "digital student office" },
+  metadataTitle: {
+    ru: "Пульс — цифровой деканат",
+    en: "Pulse — digital student office",
+  },
+  metadataDescription: {
+    ru: "Конкурсный концепт цифрового деканата MGIMO×AI Challenge. Все данные вымышлены.",
+    en: "MGIMO×AI Challenge digital student office competition concept. All data is fictional.",
+  },
+  close: { ru: "Закрыть", en: "Close" },
+  homeSuffix: { ru: " — на главную", en: " — home" },
+  studentAccount: { ru: "Личный кабинет", en: "Student portal" },
+  teacherAccount: { ru: "Кабинет преподавателя", en: "Teacher portal" },
+  staffAccount: { ru: "Кабинет сотрудника", en: "Staff portal" },
+  russianInterface: {
+    ru: "Интерфейс доступен на русском.",
+    en: "This interface is available in Russian.",
+  },
+  today: { ru: "Сегодня", en: "Today" },
+  schedule: { ru: "Расписание", en: "Schedule" },
+  grades: { ru: "Учёба", en: "Studies" },
+  requests: { ru: "Заявки", en: "Requests" },
+  profile: { ru: "Профиль", en: "Profile" },
+  notifications: { ru: "Уведомления", en: "Notifications" },
+  regulations: { ru: "Положения деканата", en: "Student office policies" },
+  studentRequests: { ru: "Заявки студентов", en: "Student requests" },
+  pickup: { ru: "Очередь сегодня", en: "Today's queue" },
+  gradebook: { ru: "Ведомость", en: "Gradebook" },
+  lessons: { ru: "Мои пары", en: "My classes" },
+  unreadNotifications: {
+    ru: "Уведомления: {count} непрочитанных",
+    en: "Notifications: {count} unread",
+  },
+  unreadSuffix: { ru: " непрочитанных", en: " unread" },
+  skipContent: { ru: "К содержимому", en: "Skip to content" },
+  navigation: { ru: "Основная навигация", en: "Main navigation" },
+  useful: { ru: "Полезное", en: "Useful links" },
+  search: { ru: "Поиск", en: "Search" },
+  page: { ru: "Страница", en: "Page" },
+  closeNotification: { ru: "Закрыть уведомление", en: "Close notification" },
+  appNotifications: { ru: "Уведомления приложения", en: "App notifications" },
+  themeToggle: { ru: "Переключить тему", en: "Switch theme" },
+  loadingPage: { ru: "Загрузка страницы", en: "Loading page" },
+  loadingPulse: { ru: "Загружаем «Пульс»…", en: "Loading Pulse…" },
+  pageError: {
+    ru: "Не получилось открыть страницу",
+    en: "We couldn't open this page",
+  },
+  loadError: {
+    ru: "Не удалось загрузить страницу",
+    en: "We couldn't load this page",
+  },
+  loadErrorDescription: {
+    ru: "Иногда соединению нужна ещё одна попытка. Попробуйте загрузить страницу снова.",
+    en: "The connection may need another try. Please try loading the page again.",
+  },
+  retry: { ru: "Повторить", en: "Try again" },
+  forbidden: { ru: "Доступ ограничен", en: "Access is limited" },
+  notFound: { ru: "Страница не найдена", en: "Page not found" },
+  forbiddenTitle: {
+    ru: "Этот раздел доступен другой роли",
+    en: "This section is for a different role",
+  },
+  notFoundTitle: {
+    ru: "Кажется, здесь другой маршрут",
+    en: "This link doesn't lead to a page",
+  },
+  forbiddenDescription: {
+    ru: "Вернитесь в свой кабинет. Если доступ нужен для учёбы или работы, обратитесь в деканат.",
+    en: "Please return to your portal. If you need access for your studies or work, contact the student office.",
+  },
+  notFoundDescription: {
+    ru: "Возможно, ссылка устарела или в адресе опечатка. Начните с главного экрана — там всё под рукой.",
+    en: "The link may be out of date or the address may contain a typo. Start from Today to find what you need.",
+  },
+  goToday: { ru: "На сегодня", en: "Go to Today" },
+  slowNetwork: { ru: "Сеть медленная", en: "The connection is slow" },
+  offline: { ru: "Нет сети", en: "You're offline" },
+  savedVersion: {
+    ru: "{status} — показана версия от {date} (МСК)",
+    en: "{status} — showing the version saved on {date} (Moscow time)",
+  },
+  refresh: { ru: "Обновить", en: "Refresh" },
+  installRegion: { ru: "Установка Пульса", en: "Install Pulse" },
+  installTitle: { ru: "Пульс под рукой", en: "Keep Pulse close" },
+  installDescription: {
+    ru: "Установите приложение на телефон. «Сегодня» и расписание останутся доступны без сети после первого открытия.",
+    en: "Install the app on your phone. Today and your schedule will be available offline after you first open them.",
+  },
+  installIos: {
+    ru: "Поделиться → На экран «Домой»",
+    en: "Share → Add to Home Screen",
+  },
+  install: { ru: "Установить на экран", en: "Add to home screen" },
+  installError: {
+    ru: "Не удалось открыть установку. Попробуйте ещё раз.",
+    en: "We couldn't start the installation. Please try again.",
+  },
+  installDismiss: {
+    ru: "Больше не показывать подсказку установки",
+    en: "Dismiss the installation tip",
+  },
+  assistant: { ru: "Спросить или сделать", en: "Ask or get things done" },
+  assistantDescription: {
+    ru: "По вашим данным и положениям деканата. Отправку подтверждаете вы.",
+    en: "Based on your data and student office policies. You confirm before anything is sent.",
+  },
+} as const satisfies Dictionary;

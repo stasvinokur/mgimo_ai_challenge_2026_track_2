@@ -1,0 +1,42 @@
+# «Пульс» behind the shared entry proxy (D-53). infra/remote-deploy.sh replaces __APP_DOMAIN__ with
+# APP_DOMAIN from the server .env and installs the result as /opt/edge/sites/pulse.caddy.
+__APP_DOMAIN__ {
+	encode zstd gzip {
+		match {
+			header Content-Type text/html*
+			header Content-Type text/css*
+			header Content-Type text/javascript*
+			header Content-Type application/javascript*
+			header Content-Type application/json*
+			header Content-Type image/svg+xml*
+		}
+	}
+
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		-Server
+	}
+
+	log {
+		output file /data/pulse-access.log {
+			roll_size 10MiB
+			roll_keep 7
+			roll_keep_for 168h
+		}
+		format filter {
+			wrap json
+			fields {
+				request>headers delete
+				request>uri delete
+				request>remote_ip delete
+				request>remote_port delete
+				request>client_ip delete
+				resp_headers delete
+			}
+		}
+	}
+
+	reverse_proxy pulse-app:3000 {
+		flush_interval -1
+	}
+}

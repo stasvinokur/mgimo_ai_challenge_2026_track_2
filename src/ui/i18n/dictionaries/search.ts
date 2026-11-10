@@ -1,0 +1,128 @@
+import type { Dictionary } from "@/ui/i18n/translate";
+
+export const searchMessages = {
+  cabinet: { ru: "Ваш кабинет", en: "Your student portal" },
+  title: { ru: "Поиск по кабинету", en: "Search your portal" },
+  lead: {
+    ru: "Найдите пару этой недели, работу, свою заявку или пункт положения.",
+    en: "Find a class this week, an assessment, your request or a regulation section.",
+  },
+  pageSearch: { ru: "Поиск на странице", en: "Search this page" },
+  query: { ru: "Что найти", en: "What to find" },
+  find: { ru: "Найти", en: "Search" },
+  hint: {
+    ru: "От 2 до 80 символов. Например: «география», «ДЕМО-102», «000002», «академотпуск».",
+    en: "Use 2–80 characters. Data is in Russian: try «география», «ДЕМО-102», «000002» or «академотпуск».",
+  },
+  queryLength: {
+    ru: "Введите запрос от 2 до 80 символов.",
+    en: "Enter a query of 2–80 characters.",
+  },
+  controlCharacters: {
+    ru: "Удалите управляющие символы из запроса.",
+    en: "Remove control characters from your query.",
+  },
+  startTitle: {
+    ru: "Начните со слова или номера",
+    en: "Start with a word or number",
+  },
+  startDescription: {
+    ru: "Поиск соберёт расписание, учёбу, ваши заявки и общие положения в одном месте. Введите, например, «география».",
+    en: "Search brings your timetable, studies, requests and regulations together. Try a Russian word such as «география».",
+  },
+  emptyTitle: { ru: "Ничего не найдено", en: "No results found" },
+  emptyDescription: {
+    ru: "Попробуйте другое слово или часть номера заявки. Если нужна помощь, спросите ассистента.",
+    en: "Try another word or part of a request number. Ask the assistant if you need help.",
+  },
+  assistant: { ru: "Спросить ассистента", en: "Ask the assistant" },
+  assistantQuery: {
+    ru: "Спросить ассистента: {query}",
+    en: "Ask the assistant: {query}",
+  },
+  results: { ru: "Результаты поиска", en: "Search results" },
+  schedule: { ru: "Расписание", en: "Schedule" },
+  grades: { ru: "Учёба", en: "Studies" },
+  requests: { ru: "Заявки", en: "Requests" },
+  regulations: { ru: "Положения", en: "Regulations" },
+  partial: {
+    ru: "Часть результатов временно недоступна.",
+    en: "Some results are temporarily unavailable.",
+  },
+  groupError: {
+    ru: "Не удалось загрузить эту группу.",
+    en: "Could not load this group.",
+  },
+  retry: { ru: "Повторить поиск", en: "Retry search" },
+  noMatches: {
+    ru: "Совпадений нет. Попробуйте другое слово.",
+    en: "No matches. Try another word.",
+  },
+  more: {
+    ru: "И ещё {count}. Уточните запрос, чтобы увидеть другие совпадения.",
+    en: "{count} more. Refine your query to see other matches.",
+  },
+  loading: { ru: "Загрузка поиска", en: "Loading search" },
+  searching: { ru: "Ищем по кабинету…", en: "Searching your portal…" },
+  paletteTitle: { ru: "Поиск и действия", en: "Search and actions" },
+  paletteDescription: {
+    ru: "Найдите в своём кабинете или выберите действие.",
+    en: "Search your portal or choose an action.",
+  },
+  close: { ru: "Закрыть поиск", en: "Close search" },
+  paletteQuery: { ru: "Что найти или сделать", en: "What to find or do" },
+  paletteHint: {
+    ru: "Поиск: 2–80 символов. ↑↓ — выбор, Enter — открыть, Escape — закрыть.",
+    en: "Search: 2–80 characters. ↑↓ to choose, Enter to open, Escape to close.",
+  },
+  found: { ru: "Найдено результатов: {count}.", en: "Results found: {count}." },
+  sourcesUnavailable: {
+    ru: " Часть источников недоступна.",
+    en: " Some sources are unavailable.",
+  },
+  suggestionsError: {
+    ru: "Не удалось загрузить подсказки. Повторите поиск.",
+    en: "Could not load suggestions. Retry your search.",
+  },
+  suggestionsPartial: {
+    ru: "Часть подсказок недоступна.",
+    en: "Some suggestions are unavailable.",
+  },
+  suggestions: { ru: "Подсказки и действия", en: "Suggestions and actions" },
+  paletteMore: {
+    ru: "И ещё {count}. Уточните запрос.",
+    en: "{count} more. Refine your query.",
+  },
+  paletteEmpty: { ru: "Ничего не нашлось", en: "No matches found" },
+  actions: { ru: "Частые действия", en: "Common actions" },
+  openPage: { ru: "Открыть страницу поиска", en: "Open search page" },
+  newRequest: { ru: "Заказать справку", en: "Request a certificate" },
+  week: { ru: "Неделя", en: "Week" },
+  whatIf: { ru: "Что если?", en: "What if?" },
+  notifications: { ru: "Уведомления", en: "Notifications" },
+  room: { ru: "ауд. {room}", en: "room {room}" },
+  cancelledLesson: { ru: " · отменена", en: " · cancelled" },
+  movedLesson: { ru: " · перенесена", en: " · rescheduled" },
+  courseContext: {
+    ru: "Дисциплина · работы и оценки",
+    en: "Course · assessments and grades",
+  },
+  ungraded: { ru: "пока без оценки", en: "not graded yet" },
+  score: { ru: "{score} из {max}", en: "{score} out of {max}" },
+  deadline: { ru: "срок {date}", en: "due {date}" },
+  request: { ru: "Заявка", en: "Request" },
+  ownRequest: { ru: "Своя заявка · {status}", en: "Your request · {status}" },
+  submitRequest: {
+    ru: "Подать заявку · {description}",
+    en: "Submit a request · {description}",
+  },
+  draft: { ru: "Черновик", en: "Draft" },
+  submitted: { ru: "Подана", en: "Submitted" },
+  accepted: { ru: "Принята", en: "Accepted" },
+  in_progress: { ru: "В работе", en: "In progress" },
+  needs_info: { ru: "Нужна информация", en: "More information needed" },
+  ready: { ru: "Готова", en: "Ready" },
+  issued: { ru: "Выдана", en: "Issued" },
+  rejected: { ru: "Отклонена", en: "Rejected" },
+  cancelled: { ru: "Отменена", en: "Cancelled" },
+} as const satisfies Dictionary;

@@ -1,0 +1,3 @@
+# Shared entry proxy (D-53). Certificates come from ACME without an e-mail.
+# One file per site in sites/*.caddy; a host may appear in only one file.
+import /etc/caddy/sites/*.caddy

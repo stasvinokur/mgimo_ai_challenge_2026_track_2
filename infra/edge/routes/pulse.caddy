@@ -1,0 +1,20 @@
+# «Пульс» in a folder of a shared domain (D-54). infra/remote-deploy.sh replaces __BASE_PATH__ with BASE_PATH from the
+# server .env and installs the result as /opt/edge/routes/<domain>/pulse.caddy. The prefix is not stripped: the app is
+# built with the same basePath. Path matchers are sorted by length, so this wins over the domain's landing page.
+redir __BASE_PATH__ __BASE_PATH__/ 308
+
+handle __BASE_PATH__/* {
+	encode zstd gzip {
+		match {
+			header Content-Type text/html*
+			header Content-Type text/css*
+			header Content-Type text/javascript*
+			header Content-Type application/javascript*
+			header Content-Type application/json*
+			header Content-Type image/svg+xml*
+		}
+	}
+	reverse_proxy pulse-app:3000 {
+		flush_interval -1
+	}
+}
